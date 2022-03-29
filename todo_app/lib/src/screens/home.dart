@@ -89,14 +89,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         actions: [
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  addTodo(_tc.text);
+                                  _tc.text = '';
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Add'),
+                              ),
+
+                              
                           TextButton(
                             onPressed: () {
-                              addTodo(_tc.text);
-                              _tc.text = '';
                               Navigator.of(context).pop();
                             },
-                            child: const Text('Add'),
+                            child: const Text('Cancel'),
                           )
+                            ],
+                          )
+
                         ],
                       ),
                     );
@@ -150,21 +163,32 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              if (todos.isNotEmpty) {
-                for (int i = 0; i < todos.length; i++) {
-                  if (index == todos[i].id) {
-                    setState(() {
-                      todos[i].details = _tc.text;
-                      _tc.text = '';
-                    });
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  if (todos.isNotEmpty) {
+                    for (int i = 0; i < todos.length; i++) {
+                      if (index == todos[i].id) {
+                        setState(() {
+                          todos[i].details = _tc.text;
+                          _tc.text = '';
+                        });
+                      }
+                    }
                   }
-                }
-              }
-              Navigator.of(context).pop();
-            },
-            child: const Text('Edit'),
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Edit'),
+              ),
+
+              TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
+                          )
+            ],
           )
         ],
       ),
