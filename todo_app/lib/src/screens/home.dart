@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               Navigator.of(context).pop();
             },
-            child: const Text('Save Edit'),
+            child: const Text('Edit'),
           )
         ],
       ),
