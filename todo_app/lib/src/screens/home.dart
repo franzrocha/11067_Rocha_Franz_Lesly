@@ -9,10 +9,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Todo> todos = [
-    // Todo(
-    //   id: 1,
-    //   details: 'Walk the goldfish',
-    // ),
+    Todo(
+      id: 0,
+      details: 'Walk the goldfish',
+    ),
   ];
 
   final ScrollController _sc = ScrollController();
@@ -24,9 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Todos App'),
+        backgroundColor: Colors.black,
         centerTitle: true,
       ),
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.greenAccent,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -41,14 +42,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         for (Todo todo in todos)
                           ListTile(
+                            onTap: () => print(_tc.text),
                             leading: Text(todo.id.toString()),
                             title: Text(todo.created.toString()),
                             subtitle: Text(todo.details),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                removeTodo(todo.id);
-                              },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    editTodo(todo.details, todo.id);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    removeTodo(todo.id);
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                       ],
@@ -56,35 +69,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              TextFormField(
-                controller: _tc,
-                focusNode: _fn,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  focusedBorder: const OutlineInputBorder(),
-                  enabledBorder: const OutlineInputBorder(),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  prefix: IconButton(
-                    icon: const Icon(
-                      Icons.cancel,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      _fn.unfocus();
-                    },
-                  ),
-                  suffix: IconButton(
-                    icon: const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      addTodo(_tc.text);
-                      _tc.text = '';
-                      _fn.unfocus();
-                    },
-                  ),
+              Center(
+                child: FloatingActionButton(
+                  child: const Icon(Icons.add),
+                  backgroundColor: const Color(0xff03dac6),
+                  foregroundColor: Colors.black,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) => AlertDialog(
+                        content: TextFormField(
+                          controller: _tc,
+                          focusNode: _fn,
+                          maxLines: 5,
+                          decoration: const InputDecoration(
+                            focusedBorder: OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(),
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              addTodo(_tc.text);
+                              _tc.text = '';
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Add'),
+                          )
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -114,12 +130,45 @@ class _HomeScreenState extends State<HomeScreen> {
       for (int i = 0; i < todos.length; i++) {
         if (id == todos[i].id) {
           todos.removeAt(i);
-          setState(() {
-            
-          });
+          setState(() {});
         }
       }
     }
+  }
+
+  editTodo(String details, int index) {
+    _tc.text = details;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => AlertDialog(
+        content: TextFormField(
+          controller: _tc,
+          decoration: const InputDecoration(
+            focusedBorder: OutlineInputBorder(),
+            enabledBorder: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (todos.isNotEmpty) {
+                for (int i = 0; i < todos.length; i++) {
+                  if (index == todos[i].id) {
+                    setState(() {
+                      todos[i].details = _tc.text;
+                      _tc.text = '';
+                    });
+                  }
+                }
+              }
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save Edit'),
+          )
+        ],
+      ),
+    );
   }
 }
 
