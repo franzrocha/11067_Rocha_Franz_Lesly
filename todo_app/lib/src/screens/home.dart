@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:todo_app/src/classes/todo_controller.dart';
+import 'package:todo_app/src/classes/todo_model.dart';
+import 'package:todo_app/src/widgets/input._todo.dart';
+import 'package:todo_app/src/widgets/todo_form.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -8,200 +11,206 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Todo> todos = [
-    Todo(
-      id: 0,
-      details: 'Walk the goldfish',
-    ),
-  ];
-
   final ScrollController _sc = ScrollController();
-  final TextEditingController _tc = TextEditingController();
-  final FocusNode _fn = FocusNode();
-
+  // final TextEditingController _tc = TextEditingController();
+  // final FocusNode _fn = FocusNode();
+  final TodoController _tc = TodoController();
+bool value = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Todos App'),
-        backgroundColor: Colors.black,
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.greenAccent,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              Expanded(
-                child: Scrollbar(
-                  controller: _sc,
-                  child: SingleChildScrollView(
-                    controller: _sc,
-                    child: Column(
-                      children: [
-                        for (Todo todo in todos)
-                          ListTile(
-                            onTap: () => print(_tc.text),
-                            leading: Text(todo.id.toString()),
-                            title: Text(todo.created.toString()),
-                            subtitle: Text(todo.details),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {
-                                    editTodo(todo.details, todo.id);
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    removeTodo(todo.id);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.assignment_turned_in_outlined),
+            Text(
+              'TodoList',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              Center(
-                child: FloatingActionButton(
-                  child: const Icon(Icons.add),
-                  backgroundColor: const Color(0xff03dac6),
-                  foregroundColor: Colors.black,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) => AlertDialog(
-                        content: TextFormField(
-                          controller: _tc,
-                          focusNode: _fn,
-                          maxLines: 5,
-                          decoration: const InputDecoration(
-                            focusedBorder: OutlineInputBorder(),
-                            enabledBorder: OutlineInputBorder(),
-                          ),
-                        ),
-                        actions: [
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  addTodo(_tc.text);
-                                  _tc.text = '';
+            ),
+          ],
+        ),
+        backgroundColor: Colors.black,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      backgroundColor: Colors.greenAccent,
+
+      floatingActionButton: FloatingActionButton(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
+        ),
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.black,
+        hoverColor: Colors.grey,
+        onPressed: () {
+          addDialog(context);
+        },
+      ),
+
+       body: SafeArea(
+        child: AnimatedBuilder(
+          animation: _tc,
+          builder: (context, Widget? w) {
+            return Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _sc,
+                      isAlwaysShown: true,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(12.0),
+                        controller: _sc,
+                        child: Column(
+                          children: [
+                             
+                            for (Todo todo in _tc.todos)
+                              TodoForm(
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                todo: todo,
+                                deleteTap: () {
+                                  _tc.removeTodo(todo);
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text('Add'),
-                              ),
-
-                              
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancel'),
-                          )
-                            ],
-                          )
-
-                        ],
+                                 editTap: () {
+                                   showEditDialog(context, todo);
+                                },
+                                 onTap: () {
+                                  _tc.toggleDone(todo);
+                                },
+                              )
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
+  
 
-  addTodo(String details) {
-    int index = 0;
-    if (todos.isEmpty) {
-      index = 0;
-    } else {
-      index = todos.last.id + 1;
-    }
+  addDialog(BuildContext context) async {
+    Todo? result = await showDialog<Todo>(
+        barrierDismissible: false,
+        context: context,
+        builder: (dContext) {
 
-    if (mounted) {
-      setState(() {
-        todos.add(Todo(details: details, id: index));
-      });
-    }
-  }
-
-  removeTodo(int id) {
-    if (todos.isNotEmpty) {
-      for (int i = 0; i < todos.length; i++) {
-        if (id == todos[i].id) {
-          todos.removeAt(i);
-          setState(() {});
-        }
-      }
-    }
-  }
-
-  editTodo(String details, int index) {
-    _tc.text = details;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => AlertDialog(
-        content: TextFormField(
-          controller: _tc,
-          decoration: const InputDecoration(
-            focusedBorder: OutlineInputBorder(),
-            enabledBorder: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          Row(
-            children: [
-              TextButton(
-                onPressed: () {
-                  if (todos.isNotEmpty) {
-                    for (int i = 0; i < todos.length; i++) {
-                      if (index == todos[i].id) {
-                        setState(() {
-                          todos[i].details = _tc.text;
-                          _tc.text = '';
-                        });
-                      }
-                    }
-                  }
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Edit'),
+          return const Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(25.0),
               ),
+            ),
+            child: InputTodo(),
+          );
+        });
+    if (result != null) {
+      _tc.addTodo(result);
+    }
+  }
 
-              TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancel'),
-                          )
-            ],
-          )
-        ],
-      ),
-    );
+
+  
+   showEditDialog(BuildContext context, Todo todo) async {
+    Todo? result = await showDialog<Todo>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dContext) {
+
+          return Dialog(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(25.0),
+              ),
+            ),
+
+            child: InputTodo(
+              current: todo.details,
+            ),
+          );
+        });
+    if (result != null) {
+      _tc.updateTodo(todo, result.details);
+    }
   }
 }
+  // addTodo(String details) {
+  //   int index = 0;
+  //   if (todos.isEmpty) {
+  //     index = 0;
+  //   } else {
+  //     index = todos.last.id + 1;
+  //   }
 
-class Todo {
-  String details;
-  late DateTime created;
-  int id;
+  //   if (mounted) {
+  //     setState(() {
+  //       todos.add(Todo(details: details, id: index));
+  //     });
+  //   }
+  // }
 
-  Todo({this.details = '', DateTime? created, this.id = 0}) {
-    created == null ? this.created = DateTime.now() : this.created = created;
-  }
-}
+  // removeTodo(int id) {
+  //   if (todos.isNotEmpty) {
+  //     for (int i = 0; i < todos.length; i++) {
+  //       if (id == todos[i].id) {
+  //         todos.removeAt(i);
+  //         setState(() {});
+  //       }
+  //     }
+  //   }
+  // }
+
+  // editTodo(String details, int index) {
+  //   _tc.text = details;
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) => AlertDialog(
+  //       content: TextFormField(
+  //         controller: _tc,
+  //         decoration: const InputDecoration(
+  //           focusedBorder: OutlineInputBorder(),
+  //           enabledBorder: OutlineInputBorder(),
+  //         ),
+  //       ),
+  //       actions: [
+  //         Row(
+  //           children: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 if (todos.isNotEmpty) {
+  //                   for (int i = 0; i < todos.length; i++) {
+  //                     if (index == todos[i].id) {
+  //                       setState(() {
+  //                         todos[i].details = _tc.text;
+  //                         _tc.text = '';
+  //                       });
+  //                     }
+  //                   }
+  //                 }
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: const Text('Edit'),
+  //             ),
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: const Text('Cancel'),
+  //             )
+  //           ],
+  //         )
+  //       ],
+  //     ),
+  //   );
+//   }
+// }
