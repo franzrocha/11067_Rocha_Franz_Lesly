@@ -1,21 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/src/classes/auth_controller.dart';
 import 'package:todo_app/src/classes/todo_controller.dart';
 import 'package:todo_app/src/classes/todo_model.dart';
 import 'package:todo_app/src/widgets/input._todo.dart';
 import 'package:todo_app/src/widgets/todo_form.dart';
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+
+class TodoScreen extends StatefulWidget {
+  final AuthController auth;
+  const TodoScreen(this.auth, {Key? key}) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<TodoScreen> createState() => _TodoScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _TodoScreenState extends State<TodoScreen> {
   final ScrollController _sc = ScrollController();
   // final TextEditingController _tc = TextEditingController();
   // final FocusNode _fn = FocusNode();
-  final TodoController _tc = TodoController();
-bool value = false;
+  late TodoController _tc;
+  AuthController get _auth => widget.auth;
+
+  @override
+  void initState() {
+    _tc = TodoController(_auth.currentUser!.username);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,15 +39,16 @@ bool value = false;
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                letterSpacing:2,
               ),
             ),
           ],
         ),
         backgroundColor: Colors.black,
+        actions: [IconButton(onPressed: (){_auth.logout();}, icon: const Icon(Icons.logout))],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Colors.greenAccent,
-
       floatingActionButton: FloatingActionButton(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
@@ -49,8 +60,7 @@ bool value = false;
           addDialog(context);
         },
       ),
-
-       body: SafeArea(
+      body: SafeArea(
         child: AnimatedBuilder(
           animation: _tc,
           builder: (context, Widget? w) {
@@ -67,8 +77,7 @@ bool value = false;
                         controller: _sc,
                         child: Column(
                           children: [
-                             
-                            for (Todo todo in _tc.todos)
+                            for (Todo todo in _tc.data)
                               TodoForm(
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 todo: todo,
@@ -76,10 +85,10 @@ bool value = false;
                                   _tc.removeTodo(todo);
                                   Navigator.of(context).pop();
                                 },
-                                 editTap: () {
-                                   showEditDialog(context, todo);
+                                editTap: () {
+                                  showEditDialog(context, todo);
                                 },
-                                 onTap: () {
+                                onTap: () {
                                   _tc.toggleDone(todo);
                                 },
                               )
@@ -96,14 +105,12 @@ bool value = false;
       ),
     );
   }
-  
 
   addDialog(BuildContext context) async {
     Todo? result = await showDialog<Todo>(
         barrierDismissible: false,
         context: context,
         builder: (dContext) {
-
           return const Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
@@ -118,21 +125,17 @@ bool value = false;
     }
   }
 
-
-  
-   showEditDialog(BuildContext context, Todo todo) async {
+  showEditDialog(BuildContext context, Todo todo) async {
     Todo? result = await showDialog<Todo>(
         context: context,
         barrierDismissible: false,
         builder: (dContext) {
-
           return Dialog(
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(25.0),
               ),
             ),
-
             child: InputTodo(
               current: todo.details,
             ),

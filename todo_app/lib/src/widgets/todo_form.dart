@@ -6,7 +6,6 @@ class TodoForm extends StatelessWidget {
   final Function()? deleteTap;
   final Function()? editTap;
   final Function()? onTap;
-  final Function()? checklist;
   final EdgeInsets? margin;
   final ScrollController _sc = ScrollController();
 
@@ -15,7 +14,6 @@ class TodoForm extends StatelessWidget {
       this.onTap,
       this.deleteTap,
       this.editTap,
-      this.checklist,
       this.margin,
       Key? key})
       : super(key: key);
@@ -58,7 +56,6 @@ class TodoForm extends StatelessWidget {
                               todo.done ? TextDecoration.lineThrough : null),
                     ),
                     const SizedBox(width: 12,),
-                    const ChecklistBox(),
                     IconButton(
                       icon: const Icon(Icons.edit),
                       iconSize: 15,
@@ -109,9 +106,8 @@ class TodoForm extends StatelessWidget {
                   color: Colors.black,
                   height: 4,
                   endIndent: 15,
+                  indent: 4,
                   ),
-
-                  
 
                 Expanded(
                   child: Scrollbar(
@@ -136,31 +132,5 @@ class TodoForm extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class ChecklistBox extends StatefulWidget {
-  const ChecklistBox({ Key? key, onPresssed }) : super(key: key);
-
-  @override
-  State<ChecklistBox> createState() => _ChecklistBoxState();
-}
-
-class _ChecklistBoxState extends State<ChecklistBox> {
-  bool value = false;
-
-  @override
-  Widget build(BuildContext context) {
-    
-    return Checkbox(
-      activeColor: Colors.green,
-      checkColor: Colors.white,
-      onChanged: (bool? value) 
-      {
-        
-        setState(() {
-        this.value = value!;
-         });},
-          value: value,);
   }
 }
