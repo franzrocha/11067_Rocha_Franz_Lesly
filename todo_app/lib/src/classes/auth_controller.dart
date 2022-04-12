@@ -4,11 +4,15 @@ import 'package:todo_app/src/classes/user_model.dart';
 
 class AuthController with ChangeNotifier {
   final Box accountsCache = Hive.box('accounts');
+  final Box autoLogin = Hive.box('auto_log');
   User? currentUser;
   List<User> users = [];
 
+  
+
   AuthController() {
     List result = accountsCache.get('users', defaultValue: []);
+    final thisUser = autoLogin.get('current_user', defaultValue: null);
 
     print(result);
     for (var entry in result) {
@@ -16,6 +20,10 @@ class AuthController with ChangeNotifier {
       users.add(User.fromJson(Map<String, dynamic>.from(entry)));
     }
     notifyListeners();
+    
+    if (thisUser != null) {
+      currentUser = User.fromJson(Map<String, dynamic>.from(thisUser));
+    }
   }
 
   String register(String username, String password) {
@@ -34,6 +42,7 @@ class AuthController with ChangeNotifier {
       bool result = userSearchResult.login(username, password);
       if (result) {
         currentUser = userSearchResult;
+        autoLogin.put('current_user', currentUser!.toJson());
         notifyListeners();
       }
       return result;
@@ -44,6 +53,7 @@ class AuthController with ChangeNotifier {
 
   logout() {
     currentUser = null;
+    autoLogin.put('current_user', null);
     notifyListeners();
   }
 

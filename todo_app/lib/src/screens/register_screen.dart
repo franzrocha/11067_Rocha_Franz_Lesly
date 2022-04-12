@@ -1,36 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/src/classes/auth_controller.dart';
-import 'package:todo_app/src/screens/register_screen.dart';
-import 'package:todo_app/src/screens/todo_screen.dart';
 
-class Wrapper extends StatelessWidget {
-  Wrapper({Key? key}) : super(key: key);
-  final AuthController _authController = AuthController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _authController,
-      builder: (context, Widget? w) {
-        if (_authController.currentUser == null) {
-          return AuthScreen(_authController);
-        } else {
-          return TodoScreen(_authController);
-        }
-      },
-    );
-  }
-}
-
-class AuthScreen extends StatefulWidget {
+class RegisterScreen extends StatefulWidget {
   final AuthController auth;
-  const AuthScreen(this.auth, {Key? key}) : super(key: key);
+  const RegisterScreen(this.auth, {Key? key}) : super(key: key);
 
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _unCon = TextEditingController(),
       _passCon = TextEditingController();
@@ -44,11 +23,11 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Container(
           decoration: const BoxDecoration(
               gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+             begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
             colors: [
+              Colors.greenAccent,
               Colors.blue,
-              Colors.lightGreen,
             ],
           )),
           child: Center(
@@ -70,26 +49,18 @@ class _AuthScreenState extends State<AuthScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
                           Icon(
-                            Icons.assignment_turned_in_outlined,
-                            size: 45,
+                            Icons.app_registration,
+                            size: 35,
                           ),
                           Text(
-                            'TodoLista',
+                            'Register An Account',
                             style: TextStyle(
-                              fontSize: 25,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 2,
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 5),
-                      const Text(
-                        'Manage everything from grocery lists to work-related tasks and more.',
-                        style: TextStyle(
-                          fontSize: 10,
-                          letterSpacing: 1,
-                        ),
                       ),
                       const Padding(
                         padding: EdgeInsets.all(16),
@@ -116,7 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: _unCon,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your username';
+                            return 'Username is required';
                           }
                           return null;
                         },
@@ -147,7 +118,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: _passCon,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'Password is required';
                           }
                           return null;
                         },
@@ -170,18 +141,15 @@ class _AuthScreenState extends State<AuthScreen> {
                                 onPressed:
                                     (_formKey.currentState?.validate() ?? false)
                                         ? () {
-                                            bool result = _auth.login(
+                                            String result = _auth.register(
                                                 _unCon.text, _passCon.text);
-                                            if (!result) {
-                                              setState(() {
-                                                prompts =
-                                                    'Error: Username or password may be incorrect or the user has not been registered yet.';
-                                              });
-                                            }
+                                            setState(() {
+                                              prompts = result;
+                                            });
                                           }
                                         : null,
                                 style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
+                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(24),
                                     ),
                                     minimumSize: const Size(145, 45),
@@ -191,39 +159,26 @@ class _AuthScreenState extends State<AuthScreen> {
                                             ? Colors.black
                                             : Colors.grey),
                                 child: const Text(
-                                  'Login',
+                                  'Register',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    "Don't have an account?",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>  
-                                          RegisterScreen(_auth),
-                                          
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Register',
-                                      style: TextStyle(
-                                          color: Colors.blue[350],
-                                          decoration: TextDecoration.underline,
-                                          fontWeight: FontWeight.bold),
+                              const SizedBox(height: 12,),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(_auth);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
                                     ),
+                                    minimumSize: const Size(100, 35),
+                                    primary: Colors.black
                                   ),
-                                ],
+                                child: const Text(
+                                  'Go to Login',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),

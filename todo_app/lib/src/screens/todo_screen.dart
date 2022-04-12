@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/src/classes/auth_controller.dart';
 import 'package:todo_app/src/classes/todo_controller.dart';
 import 'package:todo_app/src/classes/todo_model.dart';
+import 'package:todo_app/src/widgets/alert_logs.dart';
 import 'package:todo_app/src/widgets/input._todo.dart';
 import 'package:todo_app/src/widgets/todo_form.dart';
 
@@ -33,22 +34,31 @@ class _TodoScreenState extends State<TodoScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.assignment_turned_in_outlined),
+            Icon(
+              Icons.assignment_turned_in_outlined,
+              size: 25,
+            ),
             Text(
-              'TodoList',
+              'TodoLista',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                letterSpacing:2,
+                letterSpacing: 2,
               ),
             ),
           ],
         ),
         backgroundColor: Colors.black,
-        actions: [IconButton(onPressed: (){_auth.logout();}, icon: const Icon(Icons.logout))],
+        actions: [
+          IconButton(
+              onPressed: () {
+                _auth.logout();
+              },
+              icon: const Icon(Icons.logout))
+        ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Colors.greenAccent,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
@@ -66,39 +76,59 @@ class _TodoScreenState extends State<TodoScreen> {
           builder: (context, Widget? w) {
             return Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Scrollbar(
-                      controller: _sc,
-                      isAlwaysShown: true,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(12.0),
-                        controller: _sc,
-                        child: Column(
-                          children: [
-                            for (Todo todo in _tc.data)
-                              TodoForm(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                todo: todo,
-                                deleteTap: () {
-                                  _tc.removeTodo(todo);
-                                  Navigator.of(context).pop();
-                                },
-                                editTap: () {
-                                  showEditDialog(context, todo);
-                                },
-                                onTap: () {
-                                  _tc.toggleDone(todo);
-                                },
-                              )
-                          ],
-                        ),
+              child: _tc.data.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.hourglass_empty,
+                            size: 100,
+                          ),
+                          Text(
+                            "No Todos Yet",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20),
+                          )
+                        ],
                       ),
+                    )
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: Scrollbar(
+                            controller: _sc,
+                            isAlwaysShown: true,
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(12.0),
+                              controller: _sc,
+                              child: Column(
+                                children: [
+                                  for (Todo todo in _tc.data)
+                                    TodoForm(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      todo: todo,
+                                      deleteTap: () {
+                                        _tc.removeTodo(todo);
+                                        Navigator.of(context).pop();
+                                      },
+                                      editTap: () {
+                                        showEditDialog(context, todo);
+                                      },
+                                      onTap: () {
+                                        _tc.toggleDone(todo);
+                                      },
+                                    )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             );
           },
         ),
@@ -122,6 +152,14 @@ class _TodoScreenState extends State<TodoScreen> {
         });
     if (result != null) {
       _tc.addTodo(result);
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => const AlertLogs(
+          title: 'Success',
+          content: 'Todo Successfully Added',
+        ),
+      );
     }
   }
 
@@ -143,77 +181,14 @@ class _TodoScreenState extends State<TodoScreen> {
         });
     if (result != null) {
       _tc.updateTodo(todo, result.details);
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => const AlertLogs(
+          title: 'Success',
+          content: 'Todo Successfully Edited',
+        ),
+      );
     }
   }
 }
-  // addTodo(String details) {
-  //   int index = 0;
-  //   if (todos.isEmpty) {
-  //     index = 0;
-  //   } else {
-  //     index = todos.last.id + 1;
-  //   }
-
-  //   if (mounted) {
-  //     setState(() {
-  //       todos.add(Todo(details: details, id: index));
-  //     });
-  //   }
-  // }
-
-  // removeTodo(int id) {
-  //   if (todos.isNotEmpty) {
-  //     for (int i = 0; i < todos.length; i++) {
-  //       if (id == todos[i].id) {
-  //         todos.removeAt(i);
-  //         setState(() {});
-  //       }
-  //     }
-  //   }
-  // }
-
-  // editTodo(String details, int index) {
-  //   _tc.text = details;
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (BuildContext context) => AlertDialog(
-  //       content: TextFormField(
-  //         controller: _tc,
-  //         decoration: const InputDecoration(
-  //           focusedBorder: OutlineInputBorder(),
-  //           enabledBorder: OutlineInputBorder(),
-  //         ),
-  //       ),
-  //       actions: [
-  //         Row(
-  //           children: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 if (todos.isNotEmpty) {
-  //                   for (int i = 0; i < todos.length; i++) {
-  //                     if (index == todos[i].id) {
-  //                       setState(() {
-  //                         todos[i].details = _tc.text;
-  //                         _tc.text = '';
-  //                       });
-  //                     }
-  //                   }
-  //                 }
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: const Text('Edit'),
-  //             ),
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: const Text('Cancel'),
-  //             )
-  //           ],
-  //         )
-  //       ],
-  //     ),
-  //   );
-//   }
-// }
